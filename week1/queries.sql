@@ -259,6 +259,124 @@ count(DISTINCT customers.CustomerId)as CustomersServed
 
 ---
   
+### 6️⃣ 訂單規模分析
+
+**問題：** 平均訂單金額是多少？最小和最大訂單分別買了什麼？
+
+**SQL查詢1：訂單統計**
+```sql
+SELECT 
+    ROUND(AVG(Total), 2) as AvgOrderValue,
+    ROUND(MIN(Total), 2) as MinOrder,
+    ROUND(MAX(Total), 2) as MaxOrder,
+    COUNT(*) as TotalOrders
+FROM invoices;
+```
+
+**查詢結果：**
+
+| AvgOrderValue | MinOrder | MaxOrder | TotalOrders |
+|---------------|----------|----------|-------------|
+| 5.65          | 0.99     | 25.86    | 412         |
+
+---
+
+**SQL查詢2：最小訂單內容**
+```sql
+SELECT 
+    invoices.InvoiceId,
+    invoices.Total,
+    Count(invoice_items.InvoiceLineId) as Number,
+    Droup_concat(tracks.name,' | ') as Content
+From invoices
+Inner JOIN invoice_items on invoices.InvoiceId = invoice_items.InvoiceId
+Inner JOIN tracks on tracks.TrackId = invoice_items.TrackId
+Where invoices.Total = 0.99
+Group by invoices.InvoiceId
+Limit 1
+```
+
+**結果：**
+| InvoiceId | Total | Number |      Content      |
+| :-------: | :---: | :----: | :---------------: |
+|     6     | 0.99  |   1    |  Bye, Bye Brasil  |
+  
+---
+
+**SQL查詢3：最大訂單內容**
+```sql
+SELECT 
+   Invoices.InvoiceId,
+   Invoices.Total,
+   Count(invoice_items.InvoiceLineId) as SongNumber,
+   Count(DISTINCT albums.AlbumId) as AlbumNumber,
+   Group_concat(albums.Title,' | ') as AlbumName
+ From invoices
+ Inner JOIN invoice_items on invoices.InvoiceId = invoice_items.InvoiceId
+ Inner JOIN tracks on tracks.TrackId = invoice_items.TrackId
+ Inner JOIN albums on tracks.AlbumId = albums.AlbumId
+ Where invoices.Total = 25.86
+ Group by invoices.InvoiceId
+ Limit 1
+```
+
+**結果：**
+| InvoiceId | Total | SongNumber | AlbumNumber | AlbumName |
+|-----------|-------|------------|-------------|-----------|
+| 404       | 25.86 | 14         | 7           | Volume Dois,Battlestar Galactica, Season 3,Heroes, Season 1,Lost, Season 2,Lost, Season 1,Lost, Season 3,Achtung Baby|
 
 
+
+---
+**分析發現：**
+
+✅ **訂單特徵**
+- 訂單金額：$25.86（最大訂單）
+- 購買歌曲：14首
+- 涵蓋專輯：7張不同專輯
+- 平均每首：$1.85
+
+🎬 **購買模式**
+- **影集原聲帶為主**：Lost占8首（57%）
+- **跨季購買**：Lost S1、S2、S3都有
+- **多元化選擇**：影集+音樂專輯混搭
+- **非完整專輯**：平均每張專輯買2首
+
+💡 **商業洞察**
+
+1. **影集原聲帶熱銷**
+   - Lost影集歌曲占訂單57%
+   - 顯示影視IP帶動音樂銷售
+   - 客戶會跨季購買喜歡的配樂
+
+2. **客製化歌單需求**
+   - 不買完整專輯，精選喜歡的歌
+   - 跨類型、跨專輯組合
+   - 平均每專輯2首歌
+
+3. **高客單價策略有效**
+   - $25.86是平均訂單($5.65)的4.6倍
+   - 客戶願意為「精選歌單」付費
+
+📋 **行動建議**
+
+1. **影視聯名策略**
+   - 與熱門影集合作推出原聲帶
+   - 推出「影集歌單」（跨季精選）
+   - 影集播出期間促銷
+
+2. **歌單Bundle優惠**
+   - 自選10首歌：$8.9（原價$9.9，9折）
+   - 自選20首歌：$16.9（原價$19.8，85折）
+   - 主題歌單：運動、放鬆、追劇專用
+
+3. **個人化推薦**
+   - 「買了Lost的人也喜歡...」
+   - 「這張專輯的其他熱門歌曲」
+   - 智能歌單生成
+
+4. **訂閱制評估**
+   - 高客單價客戶是訂閱制目標
+   - 月付$9.99無限暢聽
+   - 保留客戶終身價值
   
